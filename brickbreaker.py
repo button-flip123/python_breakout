@@ -4,6 +4,8 @@ from sys import exit
 pygame.init()
 prozor = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("breakout")
+clock = pygame.time.Clock()
+deltaTime = 0
 
 isOver = False
 
@@ -12,13 +14,13 @@ player_height = 16
 player_score = 0
 player_x = 400 - player_width
 player_y = 580 - player_height
-player_speed = 0.6
+player_speed = 350.0
 
 ball_radius = 10
 ball_diameter = ball_radius * 2
 ball_x = player_x + player_width // 2 - ball_radius
 ball_y = player_y - ball_diameter
-ball_velocity = [0.38, -0.38]
+ball_velocity = [300.0, -300.0]
 
 brick_height = player_height
 brick_width = player_width
@@ -41,14 +43,16 @@ black = (0,0,0)
 font = pygame.font.Font("freesansbold.ttf",14)
 font2 = pygame.font.Font("freesansbold.ttf",30)
 text = font.render(f"{player_score}",True,white,(0,0,0))
-textOver = font2.render("GAME OVER\nPress R to try again", True, (255,0,0),(128,128,128))
+textOver = font2.render("GAME OVER", True, (255,0,0),(128,128,128))
+textRestart = font2.render("Press R to try again :)", True, (255,0,0),(128,128,128))
 textPos = (25,25)
-textOverPos = (325,250)
+textOverPos = (300,250)
+textRestartPos = (250,300)
 
 def updateBall():
     global ball_x,ball_y,ball_velocity,isOver
-    ball_x += ball_velocity[0]
-    ball_y += ball_velocity[1]
+    ball_x += ball_velocity[0] * deltaTime
+    ball_y += ball_velocity[1] * deltaTime
 
     if ball_x < 0:
         ball_x = 0
@@ -90,9 +94,9 @@ def loadBricks():
 def checkPlayerInput(keys):
     global player_x, player_speed, player_width
     if keys[pygame.K_a] and player_x > 0:
-        player_x -= player_speed
+        player_x -= player_speed * deltaTime
     if keys[pygame.K_d] and player_x < 800 - player_width:
-        player_x += player_speed
+        player_x += player_speed * deltaTime
 
 loadBricks()
 
@@ -139,6 +143,9 @@ while True:
 
         prozor.fill("grey")
         prozor.blit(textOver,textOverPos)
+        prozor.blit(textRestart,textRestartPos)
 
         pygame.display.flip()
         pygame.display.update()
+    
+    deltaTime = clock.tick(60) / 1000
