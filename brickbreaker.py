@@ -8,6 +8,10 @@ clock = pygame.time.Clock()
 deltaTime = 0
 
 isOver = False
+gameOverSound = pygame.mixer.Sound("assets/audio/gameover.mp3")
+hitSound = pygame.mixer.Sound("assets/audio/scoreup.mp3")
+
+
 
 player_width = 76
 player_height = 16
@@ -68,6 +72,33 @@ def updateBall():
 
     if ball_y + ball_diameter > 600:
         isOver = True
+        pygame.mixer.Sound.play(gameOverSound)
+
+def drawEntities():
+    global prozor,text,textPos,bricks,player,white,ball_color,ball
+    prozor.fill("black")
+    prozor.blit(text,textPos)
+    for i in bricks:
+        pygame.draw.rect(prozor,white,i)
+
+    pygame.draw.rect(prozor, white, player)
+    pygame.draw.rect(prozor, ball_color, ball)
+    pygame.display.flip()
+
+def updateBricks():
+    global isOver, ball_velocity, ball_x, ball_y, bricks, player_score
+    for i in bricks:
+        if ball.colliderect(i):
+            bricks.remove(i)
+            ball_velocity[1] *= -1
+            player_score += 1
+            pygame.mixer.Sound.play(hitSound)
+
+def checkVictory():
+    global bricks
+    if len(bricks) == 0:
+        isOver = True
+    
 
 def restartGame():
     global isOver, player_score, player_x, player_y, ball_x, ball_y
@@ -118,28 +149,19 @@ while True:
         if player.colliderect(ball):
             ball_velocity[1] *= -1
 
-        for i in bricks:
-            if ball.colliderect(i):
-                bricks.remove(i)
-                ball_velocity[1] *= -1
-                player_score += 1
+        updateBricks()
         text = font.render(f"Score: {player_score}",True,white,(0,0,0))
-        
-        prozor.fill("black")
-        prozor.blit(text,textPos)
-        for i in bricks:
-            pygame.draw.rect(prozor,white,i)
-        
-        pygame.draw.rect(prozor, white, player)
-        pygame.draw.rect(prozor, ball_color, ball)
+        drawEntities()
 
-        pygame.display.flip()
-
+        checkVictory()
+        
     else:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_r]:
             restartGame()
 
+        if len(bricks) == 0:
+            textOver = font2.render("YOU WON", True, (255,0,0),(128,128,128))
 
         prozor.fill("grey")
         prozor.blit(textOver,textOverPos)
